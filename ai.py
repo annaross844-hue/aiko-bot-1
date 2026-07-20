@@ -9,16 +9,13 @@ client = OpenAI(
 )
 
 
-def clean_reply(text):
-    """Remove <think> tags and action asterisks from model output."""
-    # Remove complete <think>...</think> blocks
+def clean_reply(text, fallback="Hey~ 💕"):
     text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
-    # Remove any remaining unclosed <think> block to end of text
     text = re.sub(r'<think>.*', '', text, flags=re.DOTALL)
-    # Remove any leftover </think> tags
     text = re.sub(r'</think>', '', text)
     text = re.sub(r'\*[^*]+\*', '', text)
-    return text.strip()
+    text = text.strip()
+    return text if text else fallback
 
 
 def load_character():
