@@ -34,7 +34,7 @@ FREE_LIMIT = 5
 JST = pytz.timezone('Asia/Tokyo')
 ADMIN_IDS = set(int(x.strip()) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip())
 
-bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=None))
 dp = Dispatcher()
 user_timestamps = defaultdict(list)
 
