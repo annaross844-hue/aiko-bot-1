@@ -170,7 +170,7 @@ async def handle_message(message: types.Message):
                 # Check if user is asking for a selfie
                 wants_selfie = any(word in text_lower for word in [
                     "yes", "sure", "please", "はい", "うん", "いいよ", "送って",
-                    "selfie", "photo", "picture"
+                    "selfie", "photo", "picture", "ok", "わかりました"
                 ])
 
                 if wants_selfie:
