@@ -1,17 +1,18 @@
 import asyncio
 import time
-import threading
 import random
 import os
 from collections import defaultdict
 from datetime import datetime
+
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
-from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
+
 from config import BOT_TOKEN, PATREON_URL
 from db import init_db, save_message, get_free_messages_used, increment_free_messages
 from db_shared import (
@@ -49,6 +50,7 @@ NIGHT_MESSAGES = [
     "good night babe~ i'll be thinking of you",
 ]
 
+
 def is_rate_limited(user_id: int) -> bool:
     now = time.time()
     user_timestamps[user_id] = [t for t in user_timestamps[user_id] if now - t < 60]
@@ -57,13 +59,16 @@ def is_rate_limited(user_id: int) -> bool:
     user_timestamps[user_id].append(now)
     return False
 
+
 def has_access(user_id: int) -> bool:
     if user_id in ADMIN_IDS:
         return True
     return is_user_subscribed(user_id, BOT_NAME)
 
+
 def is_in_free_trial(user_id: int) -> bool:
     return get_free_messages_used(user_id) < FREE_LIMIT
+
 
 async def send_morning_messages():
     print("[SCHEDULER] Morning messages")
@@ -71,7 +76,9 @@ async def send_morning_messages():
         try:
             await bot.send_message(user_id, random.choice(MORNING_MESSAGES))
             await asyncio.sleep(0.4)
-        except: pass
+        except:
+            pass
+
 
 async def send_night_messages():
     print("[SCHEDULER] Night messages")
@@ -79,7 +86,9 @@ async def send_night_messages():
         try:
             await bot.send_message(user_id, random.choice(NIGHT_MESSAGES))
             await asyncio.sleep(0.4)
-        except: pass
+        except:
+            pass
+
 
 async def send_social_reminder():
     print("[SCHEDULER] Social reminder")
@@ -88,7 +97,9 @@ async def send_social_reminder():
         try:
             await bot.send_message(user_id, reminder)
             await asyncio.sleep(0.5)
-        except: pass
+        except:
+            pass
+
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
@@ -99,6 +110,7 @@ async def cmd_start(message: types.Message):
         await message.answer("Hi! I'm Aiko 🥰 You have a few free messages to try me. Just talk to me~")
     else:
         await message.answer(f"Hey! You've used your free messages 💕\nSubscribe: {PATREON_URL}")
+
 
 @dp.message(Command("activate"))
 async def cmd_activate(message: types.Message):
@@ -117,6 +129,7 @@ async def cmd_activate(message: types.Message):
     else:
         await message.answer("❌ Invalid or already used code.")
 
+
 @dp.message(Command("status"))
 async def cmd_status(message: types.Message):
     user_id = message.from_user.id
@@ -130,11 +143,13 @@ async def cmd_status(message: types.Message):
         used = get_free_messages_used(user_id)
         await message.answer(f"Free messages remaining: {max(0, FREE_LIMIT - used)}/{FREE_LIMIT}")
 
+
 @dp.message(Command("clear"))
 async def cmd_clear(message: types.Message):
     from db import clear_history
     clear_history(message.from_user.id)
     await message.answer("Chat history cleared! Fresh start 🌸")
+
 
 @dp.message()
 async def handle_message(message: types.Message):
@@ -150,26 +165,36 @@ async def handle_message(message: types.Message):
         if not has_access(user_id):
             if is_in_free_trial(user_id):
                 used = get_free_messages_used(user_id)
+                text_lower = text.lower()
+
+                # Check if user is asking for a selfie
+                wants_selfie = any(word in text_lower for word in [
+                    "yes", "sure", "please", "はい", "うん", "いいよ", "送って",
+                    "selfie", "photo", "picture"
+                ])
+
+                if wants_selfie:
+                    img = get_random_image("selfie_extra") or get_random_image("selfie")
+                    if img:
+                        await bot.send_photo(message.chat.id, img)
+
                 save_message(user_id, "user", text)
                 reply = generate_reply(user_id, text)
                 save_message(user_id, "assistant", reply)
                 increment_free_messages(user_id)
                 await message.answer(reply)
 
-                # Free trial selfie logic
-                text_lower = text.lower()
-if any(word in text_lower for word in ["yes", "sure", "please", "はい", "うん", "いいよ", "送って", "selfie", "photo", "picture"]):
-    img = get_random_image("selfie_extra") or get_random_image("selfie")
-    if img:
-        await bot.send_photo(message.chat.id, img)
-elif used == 1 or used == 2:
-    await message.answer("Would you like to see a selfie of me? 💕 Just say yes~")
-elif used == 3:
-    await message.answer("I really like talking to you... Would you like another selfie? 😊")
+                if not wants_selfie:
+                    if used == 1 or used == 2:
+                        await message.answer("Would you like to see a selfie of me? 💕 Just say yes~")
+                    elif used == 3:
+                        await message.answer("I really like talking to you... Would you like another selfie? 😊")
 
                 return
             else:
-                await message.answer(f"⛔ You've used all your free messages. I miss you. Please dont leave me.\nSubscribe: {PATREON_URL}")
+                await message.answer(
+                    f"⛔ You've used all your free messages. I miss you. Please don't leave me.\nSubscribe: {PATREON_URL}"
+                )
                 return
 
         # Paid user
@@ -180,7 +205,6 @@ elif used == 3:
                 await bot.send_photo(message.chat.id, img)
                 return
 
-        # Normal paid chat
         save_message(user_id, "user", text)
         reply = generate_reply(user_id, text)
         save_message(user_id, "assistant", reply)
@@ -191,7 +215,7 @@ elif used == 3:
         print(f"[ERROR] {e}")
         await message.answer("Sorry, something went wrong... try again 💕")
 
-# === MAIN ===
+
 async def main():
     init_db()
     init_subscription_db()
@@ -208,6 +232,7 @@ async def main():
         except Exception as e:
             print(f"[CRASH] {e} - restarting...")
             await asyncio.sleep(5)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
