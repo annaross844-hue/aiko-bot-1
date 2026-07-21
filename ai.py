@@ -54,7 +54,7 @@ def generate_reply(user_id, user_message):
         messages.append({"role": "user", "content": user_message})
 
         response = client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.1-8b-instant",
             messages=messages,
             max_tokens=280,
             temperature=0.75,
@@ -83,7 +83,7 @@ def generate_knock_message(user_id):
         })
 
         response = client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.1-8b-instant",
             messages=messages,
             max_tokens=80,
             temperature=0.8,
