@@ -157,21 +157,19 @@ async def handle_message(message: types.Message):
                 await message.answer(reply)
 
                 # Free trial selfie logic
-                if used == 1 or used == 2:
-                    await message.answer("Would you like to see a selfie of me? 💕 Just say yes~")
-                elif used == 3:
-                    await message.answer("I really like talking to you... Would you like another selfie? 😊")
-
-                # Check if user wants selfie
                 text_lower = text.lower()
-                if any(word in text_lower for word in ["yes", "sure", "ok", "please", "はい", "うん", "いいよ", "送って", "selfie", "photo", "picture"]):
-                    img = get_random_image("selfie_extra") or get_random_image("cute")
-                    if img:
-                        await bot.send_photo(message.chat.id, img)
+if any(word in text_lower for word in ["yes", "sure", "please", "はい", "うん", "いいよ", "送って", "selfie", "photo", "picture"]):
+    img = get_random_image("selfie_extra") or get_random_image("selfie")
+    if img:
+        await bot.send_photo(message.chat.id, img)
+elif used == 1 or used == 2:
+    await message.answer("Would you like to see a selfie of me? 💕 Just say yes~")
+elif used == 3:
+    await message.answer("I really like talking to you... Would you like another selfie? 😊")
 
                 return
             else:
-                await message.answer(f"⛔ You've used all your free messages.\nSubscribe: {PATREON_URL}")
+                await message.answer(f"⛔ You've used all your free messages. I miss you. Please dont leave me.\nSubscribe: {PATREON_URL}")
                 return
 
         # Paid user
