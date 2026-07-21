@@ -194,7 +194,7 @@ async def handle_message(message: types.Message):
                 return
             else:
                 await message.answer(
-                    f"⛔ You've used all your free messages. I miss you. Please don't leave me.\nSubscribe: {PATREON_URL}"
+                    f"⛔ You've used all your free messages. I miss you. Please don't leave me. 無料メッセージをすべて使い切ってしまいました。寂しいです。どうか私を置いていかないでください。\nSubscribe: {PATREON_URL}"
                 )
                 return
 
