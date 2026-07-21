@@ -174,9 +174,10 @@ async def handle_message(message: types.Message):
                 ])
 
                 if wants_selfie:
-                    img = get_random_image("selfie_extra") or get_random_image("selfie")
-                    if img:
-                        await bot.send_photo(message.chat.id, img)
+    img = get_random_image("selfie_extra") or get_random_image("selfie")
+    if img:
+        await bot.send_photo(message.chat.id, img)
+        await asyncio.sleep(0.5)
 
                 save_message(user_id, "user", text)
                 reply = generate_reply(user_id, text)
